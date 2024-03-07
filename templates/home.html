@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Sample Flask Webapp</title>
         <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='chatstyles.css') }}" rel="stylesheet">
     </head>
     <body class="bg-dark">
         <nav class="navbar navbar-dark bg-dark">
@@ -14,12 +15,16 @@
         <div class="container-fluid">
             <h1 class="text-light">Welcome to my Flask App!</h1>
             
-            <div id="output"></div>
+            <div id="output">
+                {% for message in chat_history %}
+                    <p class="text-light bubble">{{ message }}</p>
+                {% endfor %}
+            </div>
 
             <nav class="navbar fixed-bottom navbar-dark bg-dark">
                 <form class="container-fluid" id="inputParent" onsubmit="return false">
                     <div class="input-group">    
-                        <input type="text" class="form-control" placeholder="Enter text to send" aria-label="Input" aria-describedby="basic-addon1" onkeypress="handleKeyPress(event)" id="userInput">
+                        <input type="text" class="form-control" placeholder="Enter text to send" aria-label="Input" aria-describedby="basic-addon1" onkeypress="handleKeyPress(event)" id="userInput" autocomplete="off">
                         <span class="input-group-text" id="basic-addon1">></span>
                     </div>
                 </form>
@@ -31,11 +36,24 @@
             function handleKeyPress(event) {
                 if (event.key === "Enter") {
                     let userInput = document.getElementById("userInput").value;
+                    let formData = new FormData();
+                    formData.append("text", userInput);
                     let newPar = document.createElement('p');
-                    newPar.classList.add('text-light')
+                    let respPar = document.createElement('p');
+                    newPar.classList.add('text-light', 'bubble');
+                    respPar.classList.add('text-light', 'bubble');
                     newPar.innerText = userInput;
-                    document.getElementById("output").appendChild(newPar);
-                    document.getElementById("inputParent").reset();
+                    fetch('/', {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => response.text())
+                    .then(data => {
+                        //console.log(data);
+                        document.getElementById("output").appendChild(newPar);
+                        respPar.innerText = data;
+                        document.getElementById("output").appendChild(respPar);
+                        document.getElementById("inputParent").reset();}
+                        ).catch(error => {console.error('Error: ', error);});
                 }
             }
         </script>
