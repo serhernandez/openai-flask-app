@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sample Flask Webapp</title>
+        <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet">
+    </head>
+    <body class="bg-dark">
+        <nav class="navbar navbar-dark bg-dark">
+            <span class="navbar-brand mb-0 h1">Top Navbar</span>
+        </nav>
+
+        <div class="container-fluid">
+            <h1 class="text-light">Welcome to my Flask App!</h1>
+            
+            <div id="output"></div>
+
+            <nav class="navbar fixed-bottom navbar-dark bg-dark">
+                <form class="container-fluid" id="inputParent" onsubmit="return false">
+                    <div class="input-group">    
+                        <input type="text" class="form-control" placeholder="Enter text to send" aria-label="Input" aria-describedby="basic-addon1" onkeypress="handleKeyPress(event)" id="userInput">
+                        <span class="input-group-text" id="basic-addon1">></span>
+                    </div>
+                </form>
+            </nav>
+        </div>
+
+        <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+        <script>
+            function handleKeyPress(event) {
+                if (event.key === "Enter") {
+                    let userInput = document.getElementById("userInput").value;
+                    let newPar = document.createElement('p');
+                    newPar.classList.add('text-light')
+                    newPar.innerText = userInput;
+                    document.getElementById("output").appendChild(newPar);
+                    document.getElementById("inputParent").reset();
+                }
+            }
+        </script>
+    </body>
+</html>
+
