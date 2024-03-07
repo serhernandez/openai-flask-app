@@ -1,0 +1,7 @@
+.bubble {
+    border-style:solid;
+    border-radius:6px;
+    border-color:lightgray;
+    border-width:1px;
+    margin:5px;
+}
