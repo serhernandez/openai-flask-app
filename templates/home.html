@@ -6,6 +6,7 @@
         <title>Sample Flask Webapp</title>
         <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet">
         <link href="{{ url_for('static', filename='chatstyles.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
     </head>
     <body class="bg-dark">
         <nav class="navbar navbar-dark bg-dark">
@@ -17,7 +18,12 @@
             
             <div id="output">
                 {% for message in chat_history %}
-                    <p class="text-light bubble">{{ message }}</p>
+                    <p>
+                        <div class="text-light bubble">
+                            <h4>{{ message['role'] }}</h2>
+                            {{ message['content'] | safe }}
+                        </div>
+                    </p>
                 {% endfor %}
             </div>
 
