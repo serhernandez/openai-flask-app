@@ -20,8 +20,12 @@
                 {% for message in chat_history %}
                     <p>
                         <div class="text-light bubble">
-                            <h4>{{ message['role'] }}</h2>
-                            {{ message['content'] | safe }}
+                            <h4>{{ message['role'] }}</h4>
+                            {% if message['role'] == 'assistant' %}
+                                {{ message['content'] | safe }}
+                            {% else %}
+                                {{ message['content'] }}
+                            {% endif %}
                         </div>
                     </p>
                 {% endfor %}
@@ -41,24 +45,37 @@
         <script>
             function handleKeyPress(event) {
                 if (event.key === "Enter") {
-                    let userInput = document.getElementById("userInput").value;
+                    const userInput = document.getElementById("userInput").value;
                     let formData = new FormData();
                     formData.append("text", userInput);
-                    let newPar = document.createElement('p');
-                    let respPar = document.createElement('p');
-                    newPar.classList.add('text-light', 'bubble');
-                    respPar.classList.add('text-light', 'bubble');
-                    newPar.innerText = userInput;
+                    const newPar = document.createElement('p');
+                    const newDiv = document.createElement('div');
+                    const newHead = document.createElement('h4');
+                    const respPar = document.createElement('p');
+                    const respDiv = document.createElement('div');
+                    const respHead = document.createElement('h4')
+                    const userText = document.createTextNode(userInput);
+                    newDiv.classList.add('text-light', 'bubble');
+                    respDiv.classList.add('text-light', 'bubble');
+                    newHead.innerText = "user";
+                    respHead.innerText = "assistant";
+                    newDiv.appendChild(newHead);
+                    newDiv.appendChild(userText);
+                    newPar.appendChild(newDiv);
+                    document.getElementById("output").appendChild(newPar);
+                    document.getElementById("inputParent").reset();
                     fetch('/', {
                         method: 'POST',
                         body: formData
                     }).then(response => response.text())
                     .then(data => {
                         //console.log(data);
-                        document.getElementById("output").appendChild(newPar);
-                        respPar.innerText = data;
-                        document.getElementById("output").appendChild(respPar);
-                        document.getElementById("inputParent").reset();}
+                        respDiv.appendChild(respHead);
+                        const respSpan = document.createElement('span');
+                        respSpan.innerHTML = data;
+                        respDiv.appendChild(respSpan);
+                        respPar.appendChild(respDiv);
+                        document.getElementById("output").appendChild(respPar);}
                         ).catch(error => {console.error('Error: ', error);});
                 }
             }
