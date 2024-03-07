@@ -46,6 +46,8 @@
             function handleKeyPress(event) {
                 if (event.key === "Enter") {
                     const userInput = document.getElementById("userInput").value;
+                    let inputField = document.getElementById("userInput");
+                    inputField.disabled = true;
                     let formData = new FormData();
                     formData.append("text", userInput);
                     const newPar = document.createElement('p');
@@ -64,6 +66,7 @@
                     newPar.appendChild(newDiv);
                     document.getElementById("output").appendChild(newPar);
                     document.getElementById("inputParent").reset();
+                    window.scrollTo(0, document.body.scrollHeight);
                     fetch('/', {
                         method: 'POST',
                         body: formData
@@ -75,7 +78,9 @@
                         respSpan.innerHTML = data;
                         respDiv.appendChild(respSpan);
                         respPar.appendChild(respDiv);
-                        document.getElementById("output").appendChild(respPar);}
+                        document.getElementById("output").appendChild(respPar);
+                        window.scrollTo(0, document.body.scrollHeight);
+                        inputField.disabled = false;}
                         ).catch(error => {console.error('Error: ', error);});
                 }
             }
