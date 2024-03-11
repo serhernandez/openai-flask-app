@@ -70,5 +70,14 @@ def process_data():
     if app.debug: print(f"Sent {completion.usage.prompt_tokens} tokens and received {completion.usage.completion_tokens} tokens, costing roughly ${(completion.usage.prompt_tokens/1000) * 0.0005 + (completion.usage.completion_tokens/1000) * 0.0015}")
     return formatted_resp
 
+@app.route("/rename", methods=['POST'])
+def rename_chat():
+    newName = request.form.get('title')
+    conversation = Conversation.query.filter_by(id=0).first()
+    conversation.name = newName
+    db.session.commit()
+    if app.debug: print(f"Conversation renamed to {newName} successfully")
+    return '', 204
+
 with app.app_context():
     db.create_all()

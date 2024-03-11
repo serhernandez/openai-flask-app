@@ -14,7 +14,10 @@
                 <span class="navbar-brand mb-0 h1">Top Navbar</span>
             </nav>
             
-            <h1 class="text-light">{{ chat_name }}</h1>
+            <div class="text-light" style="display:flex; align-items: center; gap: 20px;">
+                <h2 id="chatname">{{ chat_name }}</h2> 
+                <button class="btn btn-dark" onclick="handleRenameButton()" title="Edit Chat Title" id="editbutton">&#9998;</button>
+            </div>
             
             <div id="output">
                 {% for message in chat_history %}
@@ -30,7 +33,7 @@
             <nav class="navbar fixed-bottom navbar-dark bg-dark">
                 <form class="container-fluid" id="inputParent" onsubmit="return false">
                     <div class="input-group">    
-                        <input type="text" class="form-control" placeholder="Enter text to send" aria-label="Input" aria-describedby="basic-addon1" onkeypress="handleKeyPress(event)" id="userInput" autocomplete="off">
+                        <input type="text" class="form-control" placeholder="Enter text to send" aria-label="Input" aria-describedby="basic-addon1" onkeypress="checkChatEnter(event)" id="userInput" autocomplete="off">
                         <span class="input-group-text" id="basic-addon1">></span>
                     </div>
                 </form>
@@ -39,7 +42,7 @@
 
         <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
         <script>
-            function handleKeyPress(event) {
+            function checkChatEnter(event) {
                 if (event.key === "Enter") {
                     const userInput = document.getElementById("userInput").value;
                     let inputField = document.getElementById("userInput");
@@ -68,7 +71,6 @@
                         body: formData
                     }).then(response => response.text())
                     .then(data => {
-                        //console.log(data);
                         respDiv.appendChild(respHead);
                         const respSpan = document.createElement('span');
                         respSpan.innerHTML = data;
@@ -79,6 +81,39 @@
                         inputField.disabled = false;}
                         ).catch(error => {console.error('Error: ', error);});
                 }
+            }
+            function handleRenameButton(){
+                const titleHeader = document.getElementById("chatname");
+                const chatTitle = titleHeader.innerText;
+                const editButton = document.getElementById("editbutton");
+                const renameField = document.createElement('input');
+                renameField.type = "text"
+                renameField.value = chatTitle;
+                const cancelButton = document.createElement('button');
+                cancelButton.classList.add('btn', 'btn-dark');
+                cancelButton.innerHTML = "&#10006;";
+                cancelButton.title = "Cancel renaming";
+                cancelButton.onclick = () => {
+                    renameField.replaceWith(titleHeader);
+                    cancelButton.replaceWith(editButton);};
+                renameField.onkeypress = (event) => {
+                    if (event.key === "Enter"){
+                        let formData = new FormData();
+                        const newTitle = renameField.value
+                        formData.append("title", newTitle);
+                        fetch('/rename', {
+                            method: 'POST',
+                            body: formData
+                        }).then(response => response.text())
+                        .then(data => {
+                            titleHeader.innerText = newTitle;
+                            renameField.replaceWith(titleHeader);
+                            cancelButton.replaceWith(editButton);
+                        }).catch(error => {console.error('Error: ', error);});
+                    }
+                };
+                titleHeader.replaceWith(renameField);
+                editButton.replaceWith(cancelButton);
             }
         </script>
     </body>
