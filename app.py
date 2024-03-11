@@ -42,7 +42,7 @@ class FormattedMessage(db.Model):
 def home_page():
     if Conversation.query.count() == 0:
         newConvo = Conversation(id = 0, name = "default")
-        sysMess = Context(content = {"role": "system", "content": "You're an expert on the Python and Javascript programming languages. Provide helpful responses that include code examples when relevant."})
+        sysMess = Context(content = {"role": "system", "content": "You're an expert on the Python and Javascript programming languages. Provide helpful responses that include code examples when relevant."}, conversation_id = 0)
         db.session.add(newConvo)
         db.session.add(sysMess)
         db.session.commit()
@@ -90,7 +90,7 @@ def select_chat():
 
 @app.route("/newchat", methods=['POST'])
 def create_chat():
-    new_id = Conversation.query.order_by(Conversation.id.desc()).with_entities(Conversation.id).first()[0] + 1
+    new_id = int(Conversation.query.order_by(Conversation.id.desc()).with_entities(Conversation.id).first()[0]) + 1
     new_conversation = Conversation(id = new_id, name = "New Chat")
     sysMess = Context(content = {"role": "system", "content": "You're an expert on the Python and Javascript programming languages. Provide helpful responses that include code examples when relevant."}, conversation_id = new_id)
     db.session.add(new_conversation)
@@ -102,21 +102,18 @@ def create_chat():
 @app.route("/delete", methods=['DELETE'])
 def delete_chat():
     selconvo = Conversation.query.filter_by(id = session['current_conversation']).first()
-    db.session.delete(selconvo)
     selmess = FormattedMessage.query.filter_by(conversation_id = session['current_conversation']).all()
     selcontext = Context.query.filter_by(conversation_id = session['current_conversation']).all()
     for mess in selmess:
         db.session.delete(mess)
     for cont in selcontext:
         db.session.delete(cont)
+    db.session.delete(selconvo)
     for i in range(int(session['current_conversation']) + 1, len(Conversation.query.all())+1):
-        selconvo = Conversation.query.filter_by(id = i).all()
+        selconvo = Conversation.query.filter_by(id = i).first()
         selmess = FormattedMessage.query.filter_by(conversation_id = i).all()
         selcontext = Context.query.filter_by(conversation_id = i).all()
-        convoname = selconvo[0].name
-        db.session.delete(selconvo[0])
-        updatedConvo = Conversation(id = i - 1, name = convoname)
-        db.session.add(updatedConvo)
+        selconvo.id = i - 1
         for j in range(len(selmess)):
             selmess[j].conversation_id = i - 1
         for j in range(len(selcontext)):
