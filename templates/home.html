@@ -11,7 +11,7 @@
     <body class="bg-dark" data-bs-theme="dark">
         <div class="container-fluid">
             <nav class="navbar navbar-expand-lg fixed-top bg-body-tertiary">
-                <div class="d-inline-flex">
+                <div class="d-inline-flex column-gap-2">
                     <span class="navbar-brand mb-0 h1">Tools</span>
                     <div class="dropdown">
                         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Conversation Select</button>
@@ -23,6 +23,7 @@
                             <li><button class="dropdown-item" onclick="handleConvoSelect(-1)">New Conversation</button></li>
                         </ul>
                     </div>
+                    <button type="button" class="btn btn-danger" onclick="handleDeleteButton()">Delete Conversation</button>
                 </div>
             </nav>
             <div class="text-light" style="display:flex; align-items: center; gap: 20px;">
@@ -141,6 +142,19 @@
                     formData.append("id", id);
                     fetch('/select',{
                         method:'POST',
+                        body: formData
+                    }).then(response => response.text())
+                    .then(data => {
+                        location.reload();
+                    }).catch(error => {console.error('Error: ', error);});
+                }
+            }
+            function handleDeleteButton() {
+                if (window.confirm("Are you sure you want to delete this conversation?\nThis action cannot be undone!")){
+                    let formData = new FormData();
+                    formData.append("del", true);
+                    fetch('/delete', {
+                        method:'DELETE',
                         body: formData
                     }).then(response => response.text())
                     .then(data => {
