@@ -118,9 +118,10 @@
                             body: formData
                         }).then(response => response.text())
                         .then(data => {
-                            titleHeader.innerText = newTitle;
-                            renameField.replaceWith(titleHeader);
-                            cancelButton.replaceWith(editButton);
+                            //titleHeader.innerText = newTitle;
+                            //renameField.replaceWith(titleHeader);
+                            //cancelButton.replaceWith(editButton);
+                            location.reload();
                         }).catch(error => {console.error('Error: ', error);});
                     }
                 };
@@ -128,7 +129,27 @@
                 editButton.replaceWith(cancelButton);
             }
             function handleConvoSelect(id){
-                console.log('You selected ' + id);
+                if (id === -1) {
+                    let formData = new FormData();
+                    formData.append("new", true);
+                    fetch('/newchat',{
+                        method:'POST',
+                        body: formData
+                    }).then(response => response.text())
+                    .then(data => {
+                        location.reload();
+                    }).catch(error => {console.error('Error: ', error);});
+                } else {
+                    let formData = new FormData();
+                    formData.append("id", id);
+                    fetch('/select',{
+                        method:'POST',
+                        body: formData
+                    }).then(response => response.text())
+                    .then(data => {
+                        location.reload();
+                    }).catch(error => {console.error('Error: ', error);});
+                }
             }
         </script>
     </body>

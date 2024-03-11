@@ -82,5 +82,22 @@ def rename_chat():
     if app.debug: print(f"Conversation renamed to {newName} successfully")
     return '', 204
 
+@app.route("/select", methods=['POST'])
+def select_chat():
+    new_id = request.form.get('id')
+    session['current_conversation'] = new_id
+    return '', 204
+
+@app.route("/newchat", methods=['POST'])
+def create_chat():
+    new_id = Conversation.query.order_by(Conversation.id.desc()).with_entities(Conversation.id).first()[0] + 1
+    new_conversation = Conversation(id = new_id, name = "New Chat")
+    sysMess = Context(content = {"role": "system", "content": "You're an expert on the Python and Javascript programming languages. Provide helpful responses that include code examples when relevant."}, conversation_id = new_id)
+    db.session.add(new_conversation)
+    db.session.add(sysMess)
+    db.session.commit()
+    session['current_conversation'] = new_id
+    return '', 204
+
 with app.app_context():
     db.create_all()
