@@ -118,9 +118,6 @@
                             body: formData
                         }).then(response => response.text())
                         .then(data => {
-                            //titleHeader.innerText = newTitle;
-                            //renameField.replaceWith(titleHeader);
-                            //cancelButton.replaceWith(editButton);
                             location.reload();
                         }).catch(error => {console.error('Error: ', error);});
                     }
