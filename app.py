@@ -59,7 +59,7 @@ def process_data():
     userFormatted = FormattedMessage(role = "user", content = markdown.markdown(data, extensions=['codehilite', 'fenced_code']), conversation_id = session['current_conversation'])
     db.session.add(userContext)
     db.session.add(userFormatted)
-    currentContext = list(map(lambda x: x[0], Context.query.with_entities(Context.content).all()))
+    currentContext = list(map(lambda x: x[0], Context.query.with_entities(Context.content).filter_by(conversation_id=session['current_conversation']).all()))
     completion = client.chat.completions.create(model=model, messages=currentContext, max_tokens=1000)
     response = completion.choices[0].message.content
     formatted_resp = markdown.markdown(response, extensions=['codehilite', 'fenced_code'])
