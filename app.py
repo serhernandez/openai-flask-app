@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from openai import OpenAI
 from dotenv import load_dotenv
 from datetime import datetime
-import markdown, os, secrets
+import markdown, os, secrets, tiktoken
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
@@ -17,6 +17,7 @@ assert API_KEY, "ERROR: OpenAI Key is missing"
 
 client = OpenAI(api_key=API_KEY)
 model = "gpt-3.5-turbo"
+#encoding = tiktoken.encoding_for_model(model)
 
 class Conversation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -55,7 +56,8 @@ def process_data():
     userFormatted = FormattedMessage(role = "user", content = markdown.markdown(data, extensions=['codehilite', 'fenced_code']), conversation_id = 0)
     db.session.add(userContext)
     db.session.add(userFormatted)
-    completion = client.chat.completions.create(model=model, messages=list(map(lambda x: x[0], Context.query.with_entities(Context.content).all())), max_tokens=1000)
+    currentContext = list(map(lambda x: x[0], Context.query.with_entities(Context.content).all()))
+    completion = client.chat.completions.create(model=model, messages=currentContext, max_tokens=1000)
     response = completion.choices[0].message.content
     formatted_resp = markdown.markdown(response, extensions=['codehilite', 'fenced_code'])
     resp_dict = {"role": "assistant", "content": response}
@@ -64,7 +66,8 @@ def process_data():
     db.session.add(respContext)
     db.session.add(respFormatted)
     db.session.commit()
-    if app.debug: print(list(map(lambda x: x[0], Context.query.with_entities(Context.content).all())))
+    #if app.debug: print(list(map(lambda x: x[0], Context.query.with_entities(Context.content).all())))
+    if app.debug: print(f"Sent {completion.usage.prompt_tokens} tokens and received {completion.usage.completion_tokens} tokens, costing roughly ${(completion.usage.prompt_tokens/1000) * 0.0005 + (completion.usage.completion_tokens/1000) * 0.0015}")
     return formatted_resp
 
 with app.app_context():
