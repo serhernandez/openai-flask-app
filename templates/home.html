@@ -23,6 +23,7 @@
                             <li><button class="dropdown-item" onclick="handleConvoSelect(-1)">New Conversation</button></li>
                         </ul>
                     </div>
+                    <button type="button" class="btn btn-info" onclick="handleDuplicate()">Duplicate Conversation</button>
                     <button type="button" class="btn btn-danger" onclick="handleDeleteButton()">Delete Conversation</button>
                 </div>
             </nav>
@@ -155,6 +156,19 @@
                     formData.append("del", true);
                     fetch('/delete', {
                         method:'DELETE',
+                        body: formData
+                    }).then(response => response.text())
+                    .then(data => {
+                        location.reload();
+                    }).catch(error => {console.error('Error: ', error);});
+                }
+            }
+            function handleDuplicate() {
+                if (window.confirm("Do you really want to duplicate this conversation?")){
+                    let formData = new FormData();
+                    formData.append("dup", true);
+                    fetch('/duplicate', {
+                        method:'POST',
                         body: formData
                     }).then(response => response.text())
                     .then(data => {

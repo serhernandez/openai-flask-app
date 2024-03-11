@@ -122,5 +122,23 @@ def delete_chat():
     session['current_conversation'] = 0    
     return '', 204
 
+@app.route("/duplicate", methods=['POST'])
+def duplicate_chat():
+    currname = Conversation.query.filter_by(id = session['current_conversation']).with_entities(Conversation.name).first()[0]
+    new_id = int(Conversation.query.order_by(Conversation.id.desc()).with_entities(Conversation.id).first()[0]) + 1
+    newcon = Conversation(id = new_id, name = currname)
+    db.session.add(newcon)
+    currcon = Context.query.filter_by(conversation_id = session['current_conversation']).all()
+    curmess = FormattedMessage.query.filter_by(conversation_id = session['current_conversation']).all()
+    for con in currcon:
+        newcon = Context(content=con.content, timestamp=con.timestamp, conversation_id = new_id)
+        db.session.add(newcon)
+    for mess in curmess:
+        newmess = FormattedMessage(role = mess.role, content=mess.content, timestamp=mess.timestamp, conversation_id=new_id)
+        db.session.add(newmess)
+    db.session.commit()
+    session['current_conversation'] = new_id
+    return '', 204
+
 with app.app_context():
     db.create_all()
