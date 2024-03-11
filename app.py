@@ -46,7 +46,7 @@ def home_page():
         db.session.add(newConvo)
         db.session.add(sysMess)
         db.session.commit()
-    return render_template('home.html', chat_history=FormattedMessage.query.filter_by(conversation_id = 0).all(), chat_name = Conversation.query.filter_by(id = 0).with_entities(Conversation.name).first()[0])
+    return render_template('home.html', chat_history=FormattedMessage.query.filter_by(conversation_id = 0).all(), chat_name = Conversation.query.filter_by(id = 0).with_entities(Conversation.name).first()[0], conversations = Conversation.query.all())
 
 @app.route("/", methods=['POST'])
 def process_data():

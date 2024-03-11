@@ -10,17 +10,20 @@
     </head>
     <body class="bg-dark" data-bs-theme="dark">
         <div class="container-fluid">
-            <nav class="navbar fixed-top navbar-dark bg-dark">
-                <span class="navbar-brand mb-0 h1">Tools</span>
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Conversation Select</button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Test</a></li>
-                        <li><a class="dropdown-item" href="#">Test</a></li>
-                    </ul>
+            <nav class="navbar navbar-expand-lg fixed-top bg-body-tertiary">
+                <div class="d-inline-flex">
+                    <span class="navbar-brand mb-0 h1">Tools</span>
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Conversation Select</button>
+                        <ul class="dropdown-menu">
+                            {% for convo in conversations %}
+                                <li><a class="dropdown-item">{{ convo['name'] }}</a></li>
+                            {% endfor %}
+                            <li><a class="dropdown-item">New Conversation</a></li>
+                        </ul>
+                    </div>
                 </div>
             </nav>
-            
             <div class="text-light" style="display:flex; align-items: center; gap: 20px;">
                 <h2 id="chatname">{{ chat_name }}</h2> 
                 <button class="btn btn-dark" onclick="handleRenameButton()" title="Edit Chat Title" id="editbutton">&#9998;</button>
