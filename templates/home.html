@@ -21,11 +21,7 @@
                     <p>
                         <div class="text-light bubble">
                             <h4>{{ message['role'] }}</h4>
-                            {% if message['role'] == 'assistant' %}
-                                {{ message['content'] | safe }}
-                            {% else %}
-                                {{ message['content'] }}
-                            {% endif %}
+                            {{ message['content'] | safe }}
                         </div>
                     </p>
                 {% endfor %}
