@@ -8,10 +8,17 @@
         <link href="{{ url_for('static', filename='chatstyles.css') }}" rel="stylesheet">
         <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
     </head>
-    <body class="bg-dark">
+    <body class="bg-dark" data-bs-theme="dark">
         <div class="container-fluid">
             <nav class="navbar fixed-top navbar-dark bg-dark">
-                <span class="navbar-brand mb-0 h1">Top Navbar</span>
+                <span class="navbar-brand mb-0 h1">Tools</span>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Conversation Select</button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#">Test</a></li>
+                        <li><a class="dropdown-item" href="#">Test</a></li>
+                    </ul>
+                </div>
             </nav>
             
             <div class="text-light" style="display:flex; align-items: center; gap: 20px;">
@@ -40,7 +47,7 @@
             </nav>
         </div>
 
-        <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
         <script>
             function checkChatEnter(event) {
                 if (event.key === "Enter") {
