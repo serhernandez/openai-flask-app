@@ -46,14 +46,17 @@ def home_page():
         db.session.add(newConvo)
         db.session.add(sysMess)
         db.session.commit()
-    return render_template('home.html', chat_history=FormattedMessage.query.filter_by(conversation_id = 0).all(), chat_name = Conversation.query.filter_by(id = 0).with_entities(Conversation.name).first()[0], conversations = Conversation.query.all())
+        session['current_conversation'] = 0
+    if 'current_conversation' not in session:
+        session['current_conversation'] = 0
+    return render_template('home.html', chat_history=FormattedMessage.query.filter_by(conversation_id = session['current_conversation']).all(), chat_name = Conversation.query.filter_by(id = session['current_conversation']).with_entities(Conversation.name).first()[0], conversations = Conversation.query.all())
 
 @app.route("/", methods=['POST'])
 def process_data():
     data = request.form.get('text')
     formatted_data = {"role": "user", "content": data}
-    userContext = Context(content = formatted_data, conversation_id = 0)
-    userFormatted = FormattedMessage(role = "user", content = markdown.markdown(data, extensions=['codehilite', 'fenced_code']), conversation_id = 0)
+    userContext = Context(content = formatted_data, conversation_id = session['current_conversation'])
+    userFormatted = FormattedMessage(role = "user", content = markdown.markdown(data, extensions=['codehilite', 'fenced_code']), conversation_id = session['current_conversation'])
     db.session.add(userContext)
     db.session.add(userFormatted)
     currentContext = list(map(lambda x: x[0], Context.query.with_entities(Context.content).all()))
@@ -61,8 +64,8 @@ def process_data():
     response = completion.choices[0].message.content
     formatted_resp = markdown.markdown(response, extensions=['codehilite', 'fenced_code'])
     resp_dict = {"role": "assistant", "content": response}
-    respContext = Context(content = resp_dict, conversation_id = 0)
-    respFormatted = FormattedMessage(role = "assistant", content = formatted_resp, conversation_id = 0)
+    respContext = Context(content = resp_dict, conversation_id = session['current_conversation'])
+    respFormatted = FormattedMessage(role = "assistant", content = formatted_resp, conversation_id = session['current_conversation'])
     db.session.add(respContext)
     db.session.add(respFormatted)
     db.session.commit()
@@ -73,7 +76,7 @@ def process_data():
 @app.route("/rename", methods=['POST'])
 def rename_chat():
     newName = request.form.get('title')
-    conversation = Conversation.query.filter_by(id=0).first()
+    conversation = Conversation.query.filter_by(id=session['current_conversation']).first()
     conversation.name = newName
     db.session.commit()
     if app.debug: print(f"Conversation renamed to {newName} successfully")
