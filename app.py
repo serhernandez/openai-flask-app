@@ -114,7 +114,7 @@ def delete_chat():
         selmess = FormattedMessage.query.filter_by(conversation_id = i).all()
         selcontext = Context.query.filter_by(conversation_id = i).all()
         convoname = selconvo[0].name
-        db.session.delete(selconvo)
+        db.session.delete(selconvo[0])
         updatedConvo = Conversation(id = i - 1, name = convoname)
         db.session.add(updatedConvo)
         for j in range(len(selmess)):
