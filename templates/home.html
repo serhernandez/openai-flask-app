@@ -115,7 +115,7 @@
                         const newTitle = renameField.value
                         formData.append("title", newTitle);
                         fetch('/rename', {
-                            method: 'POST',
+                            method: 'PUT',
                             body: formData
                         }).then(response => response.text())
                         .then(data => {
