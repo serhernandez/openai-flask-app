@@ -103,8 +103,8 @@ def create_chat():
 def delete_chat():
     selconvo = Conversation.query.filter_by(id = session['current_conversation']).first()
     db.session.delete(selconvo)
-    selmess = FormattedMessage.query.filter_by(id = session['current_conversation']).all()
-    selcontext = Context.query.filter_by(id = session['current_conversation']).all()
+    selmess = FormattedMessage.query.filter_by(conversation_id = session['current_conversation']).all()
+    selcontext = Context.query.filter_by(conversation_id = session['current_conversation']).all()
     for mess in selmess:
         db.session.delete(mess)
     for cont in selcontext:
@@ -112,8 +112,8 @@ def delete_chat():
     db.session.commit()
     for i in range(int(session['current_conversation']) + 1, len(Conversation.query.all())):
         selconvo = Conversation.query.filter_by(id = i).all()
-        selmess = FormattedMessage.query.filter_by(id = i).all()
-        selcontext = Context.query.filter_by(id = i).all()
+        selmess = FormattedMessage.query.filter_by(conversation_id = i).all()
+        selcontext = Context.query.filter_by(conversation_id = i).all()
         selconvo.id = i - 1
         for j in range(len(selmess)):
             selmess[j].conversation_id = i - 1
