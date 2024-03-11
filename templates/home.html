@@ -9,11 +9,11 @@
         <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
     </head>
     <body class="bg-dark">
-        <nav class="navbar navbar-dark bg-dark">
-            <span class="navbar-brand mb-0 h1">Top Navbar</span>
-        </nav>
-
         <div class="container-fluid">
+            <nav class="navbar fixed-top navbar-dark bg-dark">
+                <span class="navbar-brand mb-0 h1">Top Navbar</span>
+            </nav>
+            
             <h1 class="text-light">Welcome to my Flask App!</h1>
             
             <div id="output">
