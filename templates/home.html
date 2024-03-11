@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Sample Flask Webapp</title>
+        <title>OpenAI API Test App</title>
         <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet">
         <link href="{{ url_for('static', filename='chatstyles.css') }}" rel="stylesheet">
         <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
@@ -14,7 +14,7 @@
                 <span class="navbar-brand mb-0 h1">Top Navbar</span>
             </nav>
             
-            <h1 class="text-light">Welcome to my Flask App!</h1>
+            <h1 class="text-light">{{ chat_name }}</h1>
             
             <div id="output">
                 {% for message in chat_history %}
