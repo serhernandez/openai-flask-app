@@ -44,7 +44,7 @@
             <nav class="navbar fixed-bottom navbar-dark bg-dark">
                 <form class="container-fluid" id="inputParent" onsubmit="return false">
                     <div class="input-group">    
-                        <input type="text" class="form-control" placeholder="Enter text to send" aria-label="Input" aria-describedby="basic-addon1" onkeypress="checkChatEnter(event)" id="userInput" autocomplete="off">
+                        <textarea class="form-control" placeholder="Enter text to send" aria-label="Input" aria-describedby="basic-addon1" onkeypress="checkChatEnter(event)" id="userInput" autocomplete="off"></textarea>
                         <span class="input-group-text" id="basic-addon1">></span>
                     </div>
                 </form>
@@ -54,7 +54,7 @@
         <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
         <script>
             function checkChatEnter(event) {
-                if (event.key === "Enter") {
+                if (event.key === "Enter" && !event.shiftKey) {
                     const userInput = document.getElementById("userInput").value;
                     let inputField = document.getElementById("userInput");
                     inputField.disabled = true;
