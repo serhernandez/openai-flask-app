@@ -17,9 +17,10 @@
                         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Conversation Select</button>
                         <ul class="dropdown-menu">
                             {% for convo in conversations %}
-                                <li><a class="dropdown-item">{{ convo['name'] }}</a></li>
+                                <li><button class="dropdown-item" onclick="handleConvoSelect({{ convo['id'] }})">{{ convo['name'] }}</button></li>
                             {% endfor %}
-                            <li><a class="dropdown-item">New Conversation</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button class="dropdown-item" onclick="handleConvoSelect(-1)">New Conversation</button></li>
                         </ul>
                     </div>
                 </div>
@@ -125,6 +126,9 @@
                 };
                 titleHeader.replaceWith(renameField);
                 editButton.replaceWith(cancelButton);
+            }
+            function handleConvoSelect(id){
+                console.log('You selected ' + id);
             }
         </script>
     </body>
