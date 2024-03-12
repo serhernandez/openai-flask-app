@@ -107,30 +107,27 @@
                 submitButton.disabled = true;
                 let inputField = document.getElementById("userInput");
                 inputField.disabled = true;
-                const newPar = document.createElement('p');
-                const newDiv = document.createElement('div');
-                const newHead = document.createElement('h4');
-                const respPar = document.createElement('p');
-                const respDiv = document.createElement('div');
-                const respHead = document.createElement('h4')
+                function parBuilderHelper(divChild, headerText, divStyle=""){
+                    const newPar = document.createElement('p');
+                    const newDiv = document.createElement('div');
+                    newDiv.classList.add('text-light', 'bubble');
+                    const newHead = document.createElement('h4');
+                    newHead.innerText = headerText;
+                    newDiv.appendChild(newHead);
+                    if (divStyle != "") newDiv.style = divStyle;
+                    newDiv.appendChild(divChild);
+                    newPar.appendChild(newDiv);
+                    return newPar;
+                }            
                 const userText = document.createTextNode(userInput);
-                newDiv.classList.add('text-light', 'bubble');
-                respDiv.classList.add('text-light', 'bubble');
-                newHead.innerText = "user";
-                respHead.innerText = "assistant";
-                newDiv.appendChild(newHead);
-                newDiv.appendChild(userText);
-                newDiv.style = "padding-bottom: 1em";
-                newPar.appendChild(newDiv);
+                const newPar = parBuilderHelper(userText, "user", "padding-bottom: 1em");
                 document.getElementById("output").appendChild(newPar);
                 document.getElementById("inputParent").reset();
                 window.scrollTo(0, document.body.scrollHeight);
                 formBuilder("text", userInput, '/', 'POST').then(data => {
-                    respDiv.appendChild(respHead);
                     const respSpan = document.createElement('span');
                     respSpan.innerHTML = data;
-                    respDiv.appendChild(respSpan);
-                    respPar.appendChild(respDiv);
+                    const respPar = parBuilderHelper(respSpan, "assistant")
                     document.getElementById("output").appendChild(respPar);
                     window.scrollTo(0, document.body.scrollHeight);
                     inputField.disabled = false;
