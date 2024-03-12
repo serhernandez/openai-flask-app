@@ -106,32 +106,44 @@
                 const chatTitle = titleHeader.innerText;
                 const editButton = document.getElementById("editbutton");
                 const renameField = document.createElement('input');
+                const newSpan = document.createElement('span');
                 renameField.type = "text"
                 renameField.value = chatTitle;
                 renameField.size = 50;
+                function sendRename() {
+                    let formData = new FormData();
+                    const newTitle = renameField.value
+                    formData.append("title", newTitle);
+                    fetch('/rename', {
+                        method: 'PUT',
+                        body: formData
+                    }).then(response => response.text())
+                    .then(data => {
+                        location.reload();
+                    }).catch(error => {console.error('Error: ', error);});
+                }
                 const cancelButton = document.createElement('button');
                 cancelButton.classList.add('btn', 'btn-dark');
                 cancelButton.innerHTML = "&#10006;";
                 cancelButton.title = "Cancel renaming";
                 cancelButton.onclick = () => {
                     renameField.replaceWith(titleHeader);
-                    cancelButton.replaceWith(editButton);};
+                    newSpan.replaceWith(editButton);
+                };
+                const confirmButton = document.createElement('button');
+                confirmButton.classList.add('btn', 'btn-dark');
+                confirmButton.innerHTML = "&#10004";
+                confirmButton.title = "Confirm name";
+                confirmButton.onclick = () => sendRename();
+                newSpan.appendChild(confirmButton);
+                newSpan.appendChild(cancelButton);
                 renameField.onkeypress = (event) => {
                     if (event.key === "Enter"){
-                        let formData = new FormData();
-                        const newTitle = renameField.value
-                        formData.append("title", newTitle);
-                        fetch('/rename', {
-                            method: 'PUT',
-                            body: formData
-                        }).then(response => response.text())
-                        .then(data => {
-                            location.reload();
-                        }).catch(error => {console.error('Error: ', error);});
+                        sendRename()
                     }
                 };
                 titleHeader.replaceWith(renameField);
-                editButton.replaceWith(cancelButton);
+                editButton.replaceWith(newSpan);
             }
             function handleConvoSelect(id){
                 if (id === -1) {
