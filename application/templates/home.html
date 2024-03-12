@@ -66,14 +66,33 @@
 
         <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
         <script>
+            /**
+             * Builds a FormData and automatically composes a fetch call
+             * @param {string} bodyKey The Key of the payload to be sent
+             * @param {string} bodyValue The Value of the payload to be sent
+             * @param {string} target The target URL to send the request to
+             * @param {string} httpMethod The HTTP Method to use when sending the request
+             * @returns {promise} The promise returned from the fetch().then() call
+             */
+            function formBuilder(bodyKey, bodyValue, target, httpMethod) {
+                let formData = new FormData();
+                formData.append(bodyKey, bodyValue);
+                return fetch(target, {method: httpMethod, body: formData}).then(response => response.text());
+            }
+            /**
+             * Higher order function that formBuilder then reloads the page.
+             * @param {function} formBuilderCallback Prepared formBuilder() call, ideally as an arrow function
+             * @returns {promise} Promise returned from fetch.then().then()
+             */
+            function fetchThenReload(formBuilderCallback){
+                return formBuilderCallback().then(data => { location.reload() });
+            }
             function sendChat() {
                 const userInput = document.getElementById("userInput").value;
                 let submitButton = document.getElementById("submitbutton");
                 submitButton.disabled = true;
                 let inputField = document.getElementById("userInput");
                 inputField.disabled = true;
-                let formData = new FormData();
-                formData.append("text", userInput);
                 const newPar = document.createElement('p');
                 const newDiv = document.createElement('div');
                 const newHead = document.createElement('h4');
@@ -92,11 +111,7 @@
                 document.getElementById("output").appendChild(newPar);
                 document.getElementById("inputParent").reset();
                 window.scrollTo(0, document.body.scrollHeight);
-                fetch('/', {
-                    method: 'POST',
-                    body: formData
-                }).then(response => response.text())
-                .then(data => {
+                formBuilder("text", userInput, '/', 'POST').then(data => {
                     respDiv.appendChild(respHead);
                     const respSpan = document.createElement('span');
                     respSpan.innerHTML = data;
@@ -123,16 +138,8 @@
                 renameField.value = chatTitle;
                 renameField.size = 50;
                 function sendRename() {
-                    let formData = new FormData();
                     const newTitle = renameField.value
-                    formData.append("title", newTitle);
-                    fetch('/rename', {
-                        method: 'PUT',
-                        body: formData
-                    }).then(response => response.text())
-                    .then(data => {
-                        location.reload();
-                    }).catch(error => {console.error('Error: ', error);});
+                    fetchThenReload(() => formBuilder("title", newTitle, '/rename', 'PUT')).catch(error => {console.error('Error: ', error);});
                 }
                 const cancelButton = document.createElement('button');
                 cancelButton.classList.add('btn', 'btn-dark');
@@ -159,63 +166,23 @@
             }
             function handleConvoSelect(id){
                 if (id === -1) {
-                    let formData = new FormData();
-                    formData.append("new", true);
-                    fetch('/newchat',{
-                        method:'POST',
-                        body: formData
-                    }).then(response => response.text())
-                    .then(data => {
-                        location.reload();
-                    }).catch(error => {console.error('Error: ', error);});
+                    fetchThenReload(() => formBuilder('new', true, '/newchat', 'POST')).catch(error => {console.error('Error: ', error);});
                 } else {
-                    let formData = new FormData();
-                    formData.append("id", id);
-                    fetch('/select',{
-                        method:'POST',
-                        body: formData
-                    }).then(response => response.text())
-                    .then(data => {
-                        location.reload();
-                    }).catch(error => {console.error('Error: ', error);});
+                    fetchThenReload(() => formBuilder('id', id, '/select', 'POST')).catch(error => {console.error('Error: ', error);});
                 }
             }
             function handleDeleteButton() {
                 if (window.confirm("Are you sure you want to delete this conversation?\nThis action cannot be undone!")){
-                    let formData = new FormData();
-                    formData.append("del", true);
-                    fetch('/delete', {
-                        method:'DELETE',
-                        body: formData
-                    }).then(response => response.text())
-                    .then(data => {
-                        location.reload();
-                    }).catch(error => {console.error('Error: ', error);});
+                    fetchThenReload(() => formBuilder('del', true, '/delete', 'DELETE')).catch(error => {console.error('Error: ', error);});
                 }
             }
             function handleDuplicate() {
                 if (window.confirm("Do you really want to duplicate this conversation?")){
-                    let formData = new FormData();
-                    formData.append("dup", true);
-                    fetch('/duplicate', {
-                        method:'POST',
-                        body: formData
-                    }).then(response => response.text())
-                    .then(data => {
-                        location.reload();
-                    }).catch(error => {console.error('Error: ', error);});
+                    fetchThenReload(() => formBuilder('dup', true, '/duplicate', 'POST')).catch(error => {console.error('Error: ', error);});
                 }
             }
             function handleModelSelect(model) {
-                let formData = new FormData();
-                formData.append("model", model);
-                fetch('/changemodel', {
-                    method:'PUT',
-                    body: formData
-                }).then(response => response.text())
-                .then(data => {
-                    location.reload();
-                }).catch(error => {console.error('Error: ', error);});
+                fetchThenReload(() => formBuilder('model', model, '/changemodel', 'PUT')).catch(error => {console.error('Error: ', error);});
             }
             function handleSysPromptButton(prompt) {
                 const outputArea = document.getElementById("output");
@@ -227,7 +194,7 @@
                 sysPromptButton.style.visibility = 'hidden';
                 editArea.size = 150;
                 editArea.value = prompt;
-                editArea.onkeypress = (event) => {if (event.key === "Enter") {changeSysprompt()}};
+                editArea.onkeypress = (event) => {if (event.key === "Enter") {changeSysprompt()} };
                 newSpan.appendChild(editArea);
                 newSpan.appendChild(confirmButton);
                 newSpan.appendChild(cancelButton);
@@ -240,16 +207,8 @@
                     sysPromptButton.style.visibility = 'visible';
                 }
                 function changeSysprompt() {
-                    let formData = new FormData();
-                    const newPrompt = editArea.value
-                    formData.append("newprompt", newPrompt);
-                    fetch('/changeprompt', {
-                        method: 'PUT',
-                        body: formData
-                    }).then(response => response.text())
-                    .then(data => {
-                        location.reload();
-                    }).catch(error => {console.error('Error: ', error);});
+                    const newPrompt = editArea.value;
+                    fetchThenReload(() => formBuilder('newprompt', newPrompt, '/changeprompt', 'PUT')).catch(error => {console.error('Error: ', error);});
                 }
                 confirmButton.classList.add('btn', 'btn-dark');
                 confirmButton.innerHTML = "&#10004";
