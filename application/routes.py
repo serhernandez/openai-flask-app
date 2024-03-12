@@ -1,52 +1,11 @@
-from flask import Flask, render_template, request, session
-from flask_sqlalchemy import SQLAlchemy
-from openai import OpenAI
-from dotenv import load_dotenv
-from datetime import datetime
-import markdown, os, secrets, tiktoken
+from flask import current_app as app
+from flask import render_template, request, session
+import markdown
+#import tiktoken
 
-app = Flask(__name__)
-app.secret_key = secrets.token_hex(16)
-load_dotenv()
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat.db'
-db = SQLAlchemy(app)
-
-API_KEY = os.getenv("OPENAI_API_KEY", "")
-assert API_KEY, "ERROR: OpenAI Key is missing"
-
-client = OpenAI(api_key=API_KEY)
-openai_models = ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo-preview"]
-openai_costs = {
-    'gpt-3.5-turbo': {'input': 0.0005, 'output': 0.0015},
-    'gpt-4': {'input': 0.03, 'output': 0.06},
-    'gpt-4-turbo-preview': {'input': 0.01, 'output': 0.03}
-}
+from .models import Context, Conversation, FormattedMessage, Settings, db
+from .clients import openai_client
 #encoding = tiktoken.encoding_for_model(model)
-
-class Conversation(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-
-class Context(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.JSON)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    conversation_id = db.Column(db.Integer, db.ForeignKey(Conversation.id))
-    conversation = db.relationship('Conversation', backref='context')
-
-class FormattedMessage(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    role = db.Column(db.String(100))
-    content = db.Column(db.String(10000))
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    conversation_id = db.Column(db.Integer, db.ForeignKey(Conversation.id))
-    conversation = db.relationship('Conversation', backref='formatted_messages')
-
-class Settings(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    model = db.Column(db.String(30))
-    current = db.Column(db.Integer)
 
 @app.route("/")
 def home_page():
@@ -58,14 +17,14 @@ def home_page():
         db.session.commit()
         session['current_conversation'] = 0
     if Settings.query.count() == 0:
-        defaultSettings = Settings(model = openai_models[0], current=0)
+        defaultSettings = Settings(model = app.config['OPENAI_MODELS'][0], current=0)
         db.session.add(defaultSettings)
         db.session.commit()
     if 'current_conversation' not in session:
         session['current_conversation'] = Settings.query.with_entities(Settings.current).first()[0]
     if 'current_model' not in session:
         session['current_model'] = Settings.query.with_entities(Settings.model).first()[0]
-    return render_template('home.html', models = openai_models, curmodel = session['current_model'], chat_history=FormattedMessage.query.filter_by(conversation_id = session['current_conversation']).all(), 
+    return render_template('home.html', models = app.config['OPENAI_MODELS'], curmodel = session['current_model'], chat_history=FormattedMessage.query.filter_by(conversation_id = session['current_conversation']).all(), 
                            chat_name = Conversation.query.filter_by(id = session['current_conversation']).with_entities(Conversation.name).first()[0], conversations = Conversation.query.all(),
                            sysprompt = Context.query.with_entities(Context.content).filter_by(conversation_id = session['current_conversation']).first()[0]['content'])
 
@@ -78,8 +37,8 @@ def process_data():
     db.session.add(userContext)
     db.session.add(userFormatted)
     currentContext = list(map(lambda x: x[0], Context.query.with_entities(Context.content).filter_by(conversation_id=session['current_conversation']).all()))
-    if session['current_model'] in openai_models:
-        completion = client.chat.completions.create(model=session['current_model'], messages=currentContext, max_tokens=1000)
+    if session['current_model'] in app.config['OPENAI_MODELS']:
+        completion = openai_client.chat.completions.create(model=session['current_model'], messages=currentContext, max_tokens=1000)
         response = completion.choices[0].message.content
     else:
         response = f"I am a dummy model and can only repeat your input back to you.</br>Your input: `{data}`"
@@ -91,8 +50,8 @@ def process_data():
     db.session.add(respFormatted)
     db.session.commit()
     #if app.debug: print(list(map(lambda x: x[0], Context.query.with_entities(Context.content).all())))
-    if app.debug and session['current_model'] in openai_models: 
-        print(f"Sent {completion.usage.prompt_tokens} tokens and received {completion.usage.completion_tokens} tokens, costing roughly ${(completion.usage.prompt_tokens/1000) * openai_costs[session['current_model']]['input'] + (completion.usage.completion_tokens/1000) * openai_costs[session['current_model']]['output']}")
+    if app.debug and session['current_model'] in app.config['OPENAI_MODELS']: 
+        print(f"Sent {completion.usage.prompt_tokens} tokens and received {completion.usage.completion_tokens} tokens, costing roughly ${(completion.usage.prompt_tokens/1000) * app.config['OPENAI_COSTS'][session['current_model']]['input'] + (completion.usage.completion_tokens/1000) * app.config['OPENAI_COSTS'][session['current_model']]['output']}")
     return formatted_resp
 
 @app.route("/rename", methods=['PUT'])
@@ -168,7 +127,7 @@ def duplicate_chat():
 @app.route("/changemodel", methods=['PUT'])
 def change_model():
     new_model = request.form.get('model')
-    if new_model in openai_models or new_model == "dummy":
+    if new_model in app.config['OPENAI_MODELS'] or new_model == "dummy":
         session['current_model'] = new_model
         settings = Settings.query.first()
         settings.model = new_model
@@ -187,6 +146,3 @@ def change_prompt():
     current_prompt.content = assembled_prompt
     db.session.commit()
     return '', 204
-
-with app.app_context():
-    db.create_all()
