@@ -84,8 +84,22 @@
              * @param {function} formBuilderCallback Prepared formBuilder() call, ideally as an arrow function
              * @returns {promise} Promise returned from fetch.then().then()
              */
-            function fetchThenReload(formBuilderCallback){
+            function fetchThenReload(formBuilderCallback) {
                 return formBuilderCallback().then(data => { location.reload() });
+            }
+            /**
+             * Creates and returns an HTML button
+             * @param {string} buttonTitle The title of the button, to be displayed on hover
+             * @param {string} buttonHTML The innerHTML property, i.e. the text to be displayed on the button
+             * @param {[string]} buttonClasses A list of classes to be passed to the button
+             * @returns {object} Returns an HTML button
+             */
+            function buttonBuilder(buttonTitle, buttonHTML, buttonClasses) {
+                let newButton = document.createElement('button');
+                newButton.title = buttonTitle;
+                newButton.innerHTML = buttonHTML;
+                newButton.classList.add(...buttonClasses);
+                return newButton;
             }
             function sendChat() {
                 const userInput = document.getElementById("userInput").value;
@@ -141,18 +155,12 @@
                     const newTitle = renameField.value
                     fetchThenReload(() => formBuilder("title", newTitle, '/rename', 'PUT')).catch(error => {console.error('Error: ', error);});
                 }
-                const cancelButton = document.createElement('button');
-                cancelButton.classList.add('btn', 'btn-dark');
-                cancelButton.innerHTML = "&#10006;";
-                cancelButton.title = "Cancel renaming";
+                const cancelButton = buttonBuilder("Cancel renaming", "&#10006;", ['btn', 'btn-dark']);
                 cancelButton.onclick = () => {
                     renameField.replaceWith(titleHeader);
                     newSpan.replaceWith(editButton);
                 };
-                const confirmButton = document.createElement('button');
-                confirmButton.classList.add('btn', 'btn-dark');
-                confirmButton.innerHTML = "&#10004";
-                confirmButton.title = "Confirm name";
+                const confirmButton = buttonBuilder("Confirm name", "&#10004", ['btn', 'btn-dark']);
                 confirmButton.onclick = () => sendRename();
                 newSpan.appendChild(confirmButton);
                 newSpan.appendChild(cancelButton);
@@ -188,8 +196,8 @@
                 const outputArea = document.getElementById("output");
                 const sysPromptButton = document.getElementById("syspromptbutton");
                 const editArea = document.createElement('input');
-                const confirmButton = document.createElement('button');
-                const cancelButton = document.createElement('button');
+                const confirmButton = buttonBuilder("Confirm new System Prompt", "&#10004", ['btn', 'btn-dark']);
+                const cancelButton = buttonBuilder("Cancel editing", "&#10006;", ['btn', 'btn-dark']);
                 const newSpan = document.createElement('span');
                 sysPromptButton.style.visibility = 'hidden';
                 editArea.size = 150;
@@ -199,9 +207,6 @@
                 newSpan.appendChild(confirmButton);
                 newSpan.appendChild(cancelButton);
                 outputArea.prepend(newSpan);
-                cancelButton.classList.add('btn', 'btn-dark');
-                cancelButton.innerHTML = "&#10006;";
-                cancelButton.title = "Cancel editing";
                 cancelButton.onclick = () => {
                     newSpan.remove();
                     sysPromptButton.style.visibility = 'visible';
@@ -210,9 +215,6 @@
                     const newPrompt = editArea.value;
                     fetchThenReload(() => formBuilder('newprompt', newPrompt, '/changeprompt', 'PUT')).catch(error => {console.error('Error: ', error);});
                 }
-                confirmButton.classList.add('btn', 'btn-dark');
-                confirmButton.innerHTML = "&#10004";
-                confirmButton.title = "Confirm new System Prompt";
                 confirmButton.onclick = () => changeSysprompt();
             }
         </script>
