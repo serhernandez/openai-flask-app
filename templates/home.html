@@ -218,12 +218,15 @@
             }
             function handleSysPromptButton(prompt) {
                 const outputArea = document.getElementById("output");
+                const sysPromptButton = document.getElementById("syspromptbutton");
                 const editArea = document.createElement('input');
                 const confirmButton = document.createElement('button');
                 const cancelButton = document.createElement('button');
                 const newSpan = document.createElement('span');
+                sysPromptButton.style.visibility = 'hidden';
                 editArea.size = 150;
                 editArea.value = prompt;
+                editArea.onkeypress = (event) => {if (event.key === "Enter") {changeSysprompt()}};
                 newSpan.appendChild(editArea);
                 newSpan.appendChild(confirmButton);
                 newSpan.appendChild(cancelButton);
@@ -231,11 +234,11 @@
                 cancelButton.classList.add('btn', 'btn-dark');
                 cancelButton.innerHTML = "&#10006;";
                 cancelButton.title = "Cancel editing";
-                cancelButton.onclick = () => newSpan.remove();
-                confirmButton.classList.add('btn', 'btn-dark');
-                confirmButton.innerHTML = "&#10004";
-                confirmButton.title = "Confirm new System Prompt";
-                confirmButton.onclick = () => {
+                cancelButton.onclick = () => {
+                    newSpan.remove();
+                    sysPromptButton.style.visibility = 'visible';
+                }
+                function changeSysprompt() {
                     let formData = new FormData();
                     const newPrompt = editArea.value
                     formData.append("newprompt", newPrompt);
@@ -246,7 +249,11 @@
                     .then(data => {
                         location.reload();
                     }).catch(error => {console.error('Error: ', error);});
-                };
+                }
+                confirmButton.classList.add('btn', 'btn-dark');
+                confirmButton.innerHTML = "&#10004";
+                confirmButton.title = "Confirm new System Prompt";
+                confirmButton.onclick = () => changeSysprompt();
             }
         </script>
     </body>
