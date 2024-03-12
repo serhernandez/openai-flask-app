@@ -17,7 +17,7 @@
                         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Conversation Select</button>
                         <ul class="dropdown-menu">
                             {% for convo in conversations %}
-                                <li><button class="dropdown-item" onclick="handleConvoSelect({{ convo['id'] }})">{{ convo['name'] }}</button></li>
+                                <li><button class="dropdown-item {{ 'disabled' if convo['name'] == chat_name }}" onclick="handleConvoSelect({{ convo['id'] }})">{{ convo['name'] }}</button></li>
                             {% endfor %}
                             <li><hr class="dropdown-divider"></li>
                             <li><button class="dropdown-item" onclick="handleConvoSelect(-1)">New Conversation</button></li>
