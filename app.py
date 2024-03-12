@@ -52,7 +52,7 @@ class Settings(db.Model):
 def home_page():
     if Conversation.query.count() == 0:
         newConvo = Conversation(id = 0, name = "default")
-        sysMess = Context(content = {"role": "system", "content": "You're an expert on the Python and Javascript programming languages. Provide helpful responses that include code examples when relevant."}, conversation_id = 0)
+        sysMess = Context(content = {"role": "system", "content": "You are an expert on the Python and Javascript programming languages. Provide helpful responses that include code examples when relevant."}, conversation_id = 0)
         db.session.add(newConvo)
         db.session.add(sysMess)
         db.session.commit()
@@ -65,7 +65,9 @@ def home_page():
         session['current_conversation'] = Settings.query.with_entities(Settings.current).first()[0]
     if 'current_model' not in session:
         session['current_model'] = Settings.query.with_entities(Settings.model).first()[0]
-    return render_template('home.html', models = openai_models, curmodel = session['current_model'], chat_history=FormattedMessage.query.filter_by(conversation_id = session['current_conversation']).all(), chat_name = Conversation.query.filter_by(id = session['current_conversation']).with_entities(Conversation.name).first()[0], conversations = Conversation.query.all())
+    return render_template('home.html', models = openai_models, curmodel = session['current_model'], chat_history=FormattedMessage.query.filter_by(conversation_id = session['current_conversation']).all(), 
+                           chat_name = Conversation.query.filter_by(id = session['current_conversation']).with_entities(Conversation.name).first()[0], conversations = Conversation.query.all(),
+                           sysprompt = Context.query.with_entities(Context.content).filter_by(conversation_id = session['current_conversation']).first()[0]['content'])
 
 @app.route("/", methods=['POST'])
 def process_data():
@@ -176,6 +178,15 @@ def change_model():
     else:
         if app.debug: print(f"{new_model} is not a valid model.")
         return 'Invalid model selected', 400
+
+@app.route("/changeprompt", methods=['PUT'])
+def change_prompt():
+    current_prompt = Context.query.filter_by(conversation_id = session['current_conversation']).first()
+    new_prompt = request.form.get("newprompt")
+    assembled_prompt = {"role": "system", "content": new_prompt}
+    current_prompt.content = assembled_prompt
+    db.session.commit()
+    return '', 204
 
 with app.app_context():
     db.create_all()

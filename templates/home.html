@@ -40,6 +40,7 @@
             <div class="text-light" style="display:flex; align-items: center; gap: 20px;">
                 <h2 id="chatname">{{ chat_name }}</h2> 
                 <button class="btn btn-dark" onclick="handleRenameButton()" title="Edit Chat Title" id="editbutton">&#9998;</button>
+                <button class="btn btn-primary" onclick='handleSysPromptButton("{{ sysprompt|string }}")' id="syspromptbutton">Edit System Prompt</button>
             </div>
             
             <div id="output">
@@ -214,6 +215,38 @@
                 .then(data => {
                     location.reload();
                 }).catch(error => {console.error('Error: ', error);});
+            }
+            function handleSysPromptButton(prompt) {
+                const outputArea = document.getElementById("output");
+                const editArea = document.createElement('input');
+                const confirmButton = document.createElement('button');
+                const cancelButton = document.createElement('button');
+                const newSpan = document.createElement('span');
+                editArea.size = 150;
+                editArea.value = prompt;
+                newSpan.appendChild(editArea);
+                newSpan.appendChild(confirmButton);
+                newSpan.appendChild(cancelButton);
+                outputArea.prepend(newSpan);
+                cancelButton.classList.add('btn', 'btn-dark');
+                cancelButton.innerHTML = "&#10006;";
+                cancelButton.title = "Cancel editing";
+                cancelButton.onclick = () => newSpan.remove();
+                confirmButton.classList.add('btn', 'btn-dark');
+                confirmButton.innerHTML = "&#10004";
+                confirmButton.title = "Confirm new System Prompt";
+                confirmButton.onclick = () => {
+                    let formData = new FormData();
+                    const newPrompt = editArea.value
+                    formData.append("newprompt", newPrompt);
+                    fetch('/changeprompt', {
+                        method: 'PUT',
+                        body: formData
+                    }).then(response => response.text())
+                    .then(data => {
+                        location.reload();
+                    }).catch(error => {console.error('Error: ', error);});
+                };
             }
         </script>
     </body>
