@@ -17,6 +17,11 @@ assert API_KEY, "ERROR: OpenAI Key is missing"
 
 client = OpenAI(api_key=API_KEY)
 openai_models = ["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo-preview"]
+openai_costs = {
+    'gpt-3.5-turbo': {'input': 0.0005, 'output': 0.0015},
+    'gpt-4': {'input': 0.03, 'output': 0.06},
+    'gpt-4-turbo-preview': {'input': 0.01, 'output': 0.03}
+}
 #encoding = tiktoken.encoding_for_model(model)
 
 class Conversation(db.Model):
@@ -60,7 +65,7 @@ def home_page():
         session['current_conversation'] = Settings.query.with_entities(Settings.current).first()[0]
     if 'current_model' not in session:
         session['current_model'] = Settings.query.with_entities(Settings.model).first()[0]
-    return render_template('home.html', chat_history=FormattedMessage.query.filter_by(conversation_id = session['current_conversation']).all(), chat_name = Conversation.query.filter_by(id = session['current_conversation']).with_entities(Conversation.name).first()[0], conversations = Conversation.query.all())
+    return render_template('home.html', models = openai_models, curmodel = session['current_model'], chat_history=FormattedMessage.query.filter_by(conversation_id = session['current_conversation']).all(), chat_name = Conversation.query.filter_by(id = session['current_conversation']).with_entities(Conversation.name).first()[0], conversations = Conversation.query.all())
 
 @app.route("/", methods=['POST'])
 def process_data():
@@ -81,7 +86,8 @@ def process_data():
     db.session.add(respFormatted)
     db.session.commit()
     #if app.debug: print(list(map(lambda x: x[0], Context.query.with_entities(Context.content).all())))
-    if app.debug: print(f"Sent {completion.usage.prompt_tokens} tokens and received {completion.usage.completion_tokens} tokens, costing roughly ${(completion.usage.prompt_tokens/1000) * 0.0005 + (completion.usage.completion_tokens/1000) * 0.0015}")
+    if app.debug: 
+        print(f"Sent {completion.usage.prompt_tokens} tokens and received {completion.usage.completion_tokens} tokens, costing roughly ${(completion.usage.prompt_tokens/1000) * openai_costs[session['current_model']]['input'] + (completion.usage.completion_tokens/1000) * openai_costs[session['current_model']]['output']}")
     return formatted_resp
 
 @app.route("/rename", methods=['PUT'])
@@ -153,6 +159,20 @@ def duplicate_chat():
     db.session.commit()
     session['current_conversation'] = new_id
     return '', 204
+
+@app.route("/changemodel", methods=['PUT'])
+def change_model():
+    new_model = request.form.get('model')
+    if new_model in openai_models:
+        session['current_model'] = new_model
+        settings = Settings.query.first()
+        settings.model = new_model
+        db.session.commit()
+        if app.debug: print(f"Model changed to {new_model} successfully.")
+        return '', 204
+    else:
+        if app.debug: print(f"{new_model} is not a valid model.")
+        return 'Invalid model selected', 400
 
 with app.app_context():
     db.create_all()

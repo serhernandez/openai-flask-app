@@ -25,6 +25,14 @@
                     </div>
                     <button type="button" class="btn btn-info" onclick="handleDuplicate()">Duplicate Conversation</button>
                     <button type="button" class="btn btn-danger" onclick="handleDeleteButton()">Delete Conversation</button>
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Model Select</button>
+                        <ul class="dropdown-menu">
+                            {% for model in models %}
+                                <li><button class="dropdown-item {{ 'disabled' if model == curmodel }}" onclick="handleModelSelect('{{model}}')">{{ model }}</button></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
             </nav>
             <div class="text-light" style="display:flex; align-items: center; gap: 20px;">
@@ -193,6 +201,17 @@
                         location.reload();
                     }).catch(error => {console.error('Error: ', error);});
                 }
+            }
+            function handleModelSelect(model) {
+                let formData = new FormData();
+                formData.append("model", model);
+                fetch('/changemodel', {
+                    method:'PUT',
+                    body: formData
+                }).then(response => response.text())
+                .then(data => {
+                    location.reload();
+                }).catch(error => {console.error('Error: ', error);});
             }
         </script>
     </body>
