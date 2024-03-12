@@ -31,6 +31,8 @@
                             {% for model in models %}
                                 <li><button class="dropdown-item {{ 'disabled' if model == curmodel }}" onclick="handleModelSelect('{{model}}')">{{ model }}</button></li>
                             {% endfor %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button class="dropdown-item {{ 'disabled' if curmodel == 'dummy' }}" onclick="handleModelSelect('dummy')">Dummy Model</button></li>
                         </ul>
                     </div>
                 </div>

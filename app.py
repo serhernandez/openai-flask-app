@@ -76,8 +76,11 @@ def process_data():
     db.session.add(userContext)
     db.session.add(userFormatted)
     currentContext = list(map(lambda x: x[0], Context.query.with_entities(Context.content).filter_by(conversation_id=session['current_conversation']).all()))
-    completion = client.chat.completions.create(model=session['current_model'], messages=currentContext, max_tokens=1000)
-    response = completion.choices[0].message.content
+    if session['current_model'] in openai_models:
+        completion = client.chat.completions.create(model=session['current_model'], messages=currentContext, max_tokens=1000)
+        response = completion.choices[0].message.content
+    else:
+        response = f"I am a dummy model and can only repeat your input back to you.</br>Your input: `{data}`"
     formatted_resp = markdown.markdown(response, extensions=['codehilite', 'fenced_code'])
     resp_dict = {"role": "assistant", "content": response}
     respContext = Context(content = resp_dict, conversation_id = session['current_conversation'])
@@ -86,7 +89,7 @@ def process_data():
     db.session.add(respFormatted)
     db.session.commit()
     #if app.debug: print(list(map(lambda x: x[0], Context.query.with_entities(Context.content).all())))
-    if app.debug: 
+    if app.debug and session['current_model'] in openai_models: 
         print(f"Sent {completion.usage.prompt_tokens} tokens and received {completion.usage.completion_tokens} tokens, costing roughly ${(completion.usage.prompt_tokens/1000) * openai_costs[session['current_model']]['input'] + (completion.usage.completion_tokens/1000) * openai_costs[session['current_model']]['output']}")
     return formatted_resp
 
@@ -163,7 +166,7 @@ def duplicate_chat():
 @app.route("/changemodel", methods=['PUT'])
 def change_model():
     new_model = request.form.get('model')
-    if new_model in openai_models:
+    if new_model in openai_models or new_model == "dummy":
         session['current_model'] = new_model
         settings = Settings.query.first()
         settings.model = new_model
