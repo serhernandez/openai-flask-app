@@ -110,7 +110,7 @@ def delete_chat():
 def duplicate_chat():
     currname = Conversation.query.filter_by(id = session['current_conversation']).with_entities(Conversation.name).first()[0]
     new_id = int(Conversation.query.order_by(Conversation.id.desc()).with_entities(Conversation.id).first()[0]) + 1
-    newcon = Conversation(id = new_id, name = currname)
+    newcon = Conversation(id = new_id, name = " ".join([currname, "(copy)"]))
     db.session.add(newcon)
     currcon = Context.query.filter_by(conversation_id = session['current_conversation']).all()
     curmess = FormattedMessage.query.filter_by(conversation_id = session['current_conversation']).all()
