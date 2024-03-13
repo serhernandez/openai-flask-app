@@ -118,9 +118,8 @@
                     newDiv.appendChild(divChild);
                     newPar.appendChild(newDiv);
                     return newPar;
-                }            
-                const userText = document.createTextNode(userInput);
-                const newPar = parBuilderHelper(userText, "user", "padding-bottom: 1em");
+                }
+                const newPar = parBuilderHelper(document.createTextNode(userInput), "user", "padding-bottom: 1em");
                 document.getElementById("output").appendChild(newPar);
                 document.getElementById("inputParent").reset();
                 window.scrollTo(0, document.body.scrollHeight);
