@@ -35,6 +35,10 @@
                             <li><button class="dropdown-item {{ 'disabled' if curmodel == 'dummy' }}" onclick="handleModelSelect('dummy')">Dummy Model</button></li>
                         </ul>
                     </div>
+                    <span style="margin-left:auto;">
+                        <button class="btn btn-dark" type="button" onclick="handleScrollButton(0)">&#8593;</button>
+                        <button class="btn btn-dark" type="button" onclick="handleScrollButton(-1)">&#8595;</button>
+                    </span>
                 </div>
             </nav>
             <div class="text-light" style="display:flex; align-items: center; gap: 20px;">
@@ -212,6 +216,10 @@
                     fetchThenReload(() => formBuilder('newprompt', newPrompt, '/changeprompt', 'PUT')).catch(error => {console.error('Error: ', error);});
                 }
                 confirmButton.onclick = () => changeSysprompt();
+            }
+            function handleScrollButton(loc) {
+                if (loc == 0) window.scrollTo(0, 0);
+                else window.scrollTo(0, document.body.scrollHeight);
             }
         </script>
     </body>
