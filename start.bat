@@ -1,4 +1,4 @@
 python -m venv venv
 call venv\Scripts\activate
 pip install -r requirements.txt
-flask app run
+flask run
